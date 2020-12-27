@@ -397,6 +397,9 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.n = n
         self.indices = range(n)
 
+        pbar = tqdm(self.img_files, desc='Opening images', total=len(self.img_files))
+        self.pils = [Image.open(im) for im in pbar]
+
         # Rectangular Training
         if self.rect:
             # Sort by aspect ratio
@@ -566,7 +569,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
             labels_out[:, 1:] = torch.from_numpy(labels)
 
         # Convert
-        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = img.transpose(2, 0, 1)  # to 3x416x416
         img = np.ascontiguousarray(img)
 
         return torch.from_numpy(img), labels_out, self.img_files[index], shapes
@@ -585,7 +588,10 @@ def load_image(self, index):
     img = self.imgs[index]
     if img is None:  # not cached
         path = self.img_files[index]
-        img = cv2.imread(path)  # BGR
+        # img = cv2.imread(path)  # BGR
+        img = np.array(self.pils[index])
+        if img.ndim == 2:
+            img = np.tile(img[:, :, None], 3)  # greyscale to RGB
         assert img is not None, 'Image Not Found ' + path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
