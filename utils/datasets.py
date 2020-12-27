@@ -398,6 +398,12 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.indices = range(n)
 
         pbar = tqdm(self.img_files, desc='Opening images', total=len(self.img_files))
+        self.pils = []
+        for f in pbar:
+            im = Image.open(f)
+            self.pils.append(im.copy())
+            im.close()
+
         self.pils = [Image.open(im) for im in pbar]
 
         # Rectangular Training
