@@ -398,18 +398,16 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.indices = range(n)
 
         def open_one(f):
-            #im = Image.open(f)
-            #c = im.copy()
-            #im.close()
-            return Image.open(f)
+            im = Image.open(f)
+            c = im.copy()
+            im.close()
+            return c
 
-        # results = ThreadPool(8).imap(lambda x: load_image(*x), zip(repeat(self), range(n)))  # 8 threads
-        pbar = tqdm(self.img_files, desc='Opening images', total=len(self.img_files))
-        self.pils = []
-        for x in pbar:
-            self.pils.append(open_one(f))
-
-        self.pils = [Image.open(im) for im in pbar]
+        results = ThreadPool(8).imap(lambda x: open_one(x), self.img_files)  # 8 threads
+        pbar = tqdm(enumerate(results), total=n, desc='Opening images')
+        self.pils = [None] * n
+        for i, x in pbar:
+            self.pils.append(x)
 
         # Rectangular Training
         if self.rect:
