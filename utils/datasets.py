@@ -397,13 +397,17 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.n = n
         self.indices = range(n)
 
+        def open_one(f):
+            #im = Image.open(f)
+            #c = im.copy()
+            #im.close()
+            return Image.open(f)
+
+        # results = ThreadPool(8).imap(lambda x: load_image(*x), zip(repeat(self), range(n)))  # 8 threads
         pbar = tqdm(self.img_files, desc='Opening images', total=len(self.img_files))
         self.pils = []
-        for f in pbar:
-            # im = Image.open(f)
-            # self.pils.append(im.copy())
-            self.pils.append(Image.open(f))
-            # im.close()
+        for x in pbar:
+            self.pils.append(open_one(f))
 
         self.pils = [Image.open(im) for im in pbar]
 
